@@ -1,0 +1,44 @@
+<?php
+/** @var \Envoice\Einvoice\Block\Adminhtml\System\Config\Connections $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$rows = $block->getRows();
+?>
+<div id="envoice-connections">
+    <table class="admin__table-secondary envoice-connections">
+        <thead>
+        <tr>
+            <th><?= $escaper->escapeHtml(__('Store URL')) ?></th>
+            <th><?= $escaper->escapeHtml(__('Store views')) ?></th>
+            <th><?= $escaper->escapeHtml(__('Status')) ?></th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($rows as $row): ?>
+            <tr>
+                <td><?= $escaper->escapeHtml($row['site']) ?></td>
+                <td><?= $escaper->escapeHtml($row['stores']) ?></td>
+                <td data-role="envoice-status">
+                    <?= $escaper->escapeHtml($row['connected'] ? __('Connected') : __('Not connected')) ?>
+                </td>
+                <td>
+                    <?php if ($row['connected']): ?>
+                        <button type="button" class="action-secondary" data-envoice-disconnect
+                                data-site="<?= $escaper->escapeHtmlAttr($row['site']) ?>">
+                            <span><?= $escaper->escapeHtml(__('Disconnect')) ?></span>
+                        </button>
+                    <?php else: ?>
+                        <button type="button" class="action-primary" data-envoice-connect
+                                data-site="<?= $escaper->escapeHtmlAttr($row['site']) ?>">
+                            <span><?= $escaper->escapeHtml(__('Connect to envoice')) ?></span>
+                        </button>
+                    <?php endif; ?>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+<script type="text/x-magento-init">
+    {"#envoice-connections": {"Envoice_Einvoice/js/connect": <?= /* @noEscape */ json_encode($block->getWidgetConfig()) ?>}}
+</script>

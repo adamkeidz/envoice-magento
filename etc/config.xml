@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <envoice>
+            <automation>
+                <auto_submit>0</auto_submit>
+                <auto_mode>individual</auto_mode>
+                <auto_cn>1</auto_cn>
+                <skip_non_myr>1</skip_non_myr>
+                <min_total/>
+                <vat_as_tin>1</vat_as_tin>
+                <checkout_reg_no>1</checkout_reg_no>
+            </automation>
+            <advanced>
+                <api_base>https://envoice.my</api_base>
+                <public_base/>
+            </advanced>
+        </envoice>
+    </default>
+</config>

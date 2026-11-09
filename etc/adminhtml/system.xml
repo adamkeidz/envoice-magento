@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="envoice" translate="label" sortOrder="450">
+            <label>envoice</label>
+        </tab>
+        <section id="envoice" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>LHDN e-Invoice</label>
+            <tab>envoice</tab>
+            <resource>Envoice_Einvoice::config</resource>
+            <group id="connection" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Connection</label>
+                <attribute type="expanded">1</attribute>
+                <comment>Each store URL pairs with its own envoice shop. Store views that share a URL share one pairing.</comment>
+                <field id="stores" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Store URLs</label>
+                    <frontend_model>Envoice\Einvoice\Block\Adminhtml\System\Config\Connections</frontend_model>
+                </field>
+            </group>
+            <group id="automation" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Automation</label>
+                <attribute type="expanded">1</attribute>
+                <field id="auto_submit" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Auto-submit paid orders</label>
+                    <comment>Files an order once its invoice is paid. Runs from Magento cron, never during checkout.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="auto_mode" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Auto-submit as</label>
+                    <comment>Orders with a buyer TIN are always filed individually.</comment>
+                    <source_model>Envoice\Einvoice\Model\Config\Source\Mode</source_model>
+                    <depends>
+                        <field id="auto_submit">1</field>
+                    </depends>
+                </field>
+                <field id="skip_non_myr" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Skip orders not in MYR</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="auto_submit">1</field>
+                    </depends>
+                </field>
+                <field id="min_total" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Minimum order total (MYR)</label>
+                    <validate>validate-zero-or-greater</validate>
+                    <depends>
+                        <field id="auto_submit">1</field>
+                    </depends>
+                </field>
+                <field id="auto_cn" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Credit notes for credit memos</label>
+                    <comment>Files a credit note when a credit memo is created for an e-invoiced order.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="vat_as_tin" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Buyer TIN from VAT number</label>
+                    <comment>Reads the billing VAT number as the buyer TIN. Buyers see the field at checkout when Customer Configuration has Show VAT Number on Storefront set to Yes.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="checkout_reg_no" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>BRN or IC field at checkout</label>
+                    <comment>Shows an optional field above the payment methods for the buyer's business registration number or IC.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="advanced" translate="label" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Advanced</label>
+                <field id="api_base" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>envoice URL</label>
+                    <validate>validate-url</validate>
+                </field>
+                <field id="public_base" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>envoice URL for the browser</label>
+                    <comment>Leave empty unless the browser reaches envoice on a different URL than this server does.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

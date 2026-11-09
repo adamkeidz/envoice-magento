@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="envoice_process_queue" instance="Envoice\Einvoice\Cron\ProcessQueue" method="execute">
+            <schedule>* * * * *</schedule>
+        </job>
+        <job name="envoice_refresh_statuses" instance="Envoice\Einvoice\Cron\RefreshStatuses" method="execute">
+            <schedule>*/15 * * * *</schedule>
+        </job>
+    </group>
+</config>

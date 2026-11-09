@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_model_service_quote_submit_before">
+        <observer name="envoice_copy_checkout_reg_no" instance="Envoice\Einvoice\Observer\CopyCheckoutRegNo"/>
+    </event>
+    <event name="sales_order_invoice_save_commit_after">
+        <observer name="envoice_queue_paid_invoice" instance="Envoice\Einvoice\Observer\QueuePaidInvoice"/>
+    </event>
+    <event name="sales_order_creditmemo_save_commit_after">
+        <observer name="envoice_queue_credit_memo" instance="Envoice\Einvoice\Observer\QueueCreditMemo"/>
+    </event>
+</config>

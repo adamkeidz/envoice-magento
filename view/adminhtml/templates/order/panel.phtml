@@ -1,0 +1,276 @@
+<?php
+/** @var \Envoice\Einvoice\Block\Adminhtml\Order\Panel $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+$document = $block->getDocument();
+$status = (string) ($document['status'] ?? '');
+$submitJob = $block->getSubmitJob();
+$formKey = $block->getFormKey();
+$buyer = $block->getBuyer();
+$creditMemos = $block->getCreditMemos();
+$cancelState = $block->getCancelState();
+$buyerOpen = $block->isBuyerFormOpen();
+$styles = '.envoice-order-panel .admin__page-section-item { margin-bottom: 2rem; }'
+    . ' .envoice-order-panel .admin__page-section-item:last-child { margin-bottom: 0; }'
+    . ' .envoice-order-panel .envoice-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }'
+    . ' .envoice-order-panel .admin__fieldset { max-width: 48rem; }'
+    . ' .envoice-order-panel .admin__legend { margin-bottom: 1.5rem; }';
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('style', [], $styles, false) ?>
+<section class="admin__page-section envoice-order-panel">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $escaper->escapeHtml(__('LHDN e-Invoice (envoice)')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+    <?php if (!$block->isConnected()): ?>
+        <p>
+            <?= $escaper->escapeHtml(__('This store URL is not connected to envoice.')) ?>
+            <a href="<?= $escaper->escapeUrl($block->getConfigUrl()) ?>"><?= $escaper->escapeHtml(__('Connect')) ?></a>
+        </p>
+    <?php else: ?>
+        <div class="admin__page-section-item">
+            <table class="admin__table-secondary">
+                <tr>
+                    <th><?= $escaper->escapeHtml(__('Status')) ?></th>
+                    <td><strong><?= $escaper->escapeHtml($status !== '' ? $status : __('Not filed')) ?></strong></td>
+                </tr>
+                <?php if ($block->getCheckoutRegNo() !== ''): ?>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('BRN or IC from checkout')) ?></th>
+                        <td><?= $escaper->escapeHtml($block->getCheckoutRegNo()) ?></td>
+                    </tr>
+                <?php endif; ?>
+                <?php if (($document['uuid'] ?? '') !== ''): ?>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('LHDN UUID')) ?></th>
+                        <td><?= $escaper->escapeHtml($document['uuid']) ?></td>
+                    </tr>
+                <?php endif; ?>
+                <?php if (($document['qr_link'] ?? '') !== ''): ?>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Validation link')) ?></th>
+                        <td>
+                            <a href="<?= $escaper->escapeUrl($document['qr_link']) ?>" target="_blank" rel="noopener">
+                                <?= $escaper->escapeHtml(__('Open on MyInvois')) ?>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+                <?php if ($submitJob && $submitJob['status'] !== 'done'): ?>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Queue')) ?></th>
+                        <td>
+                            <?= $escaper->escapeHtml($submitJob['status'] === 'failed' ? __('Failed') : __('Waiting to retry')) ?>:
+                            <?= $escaper->escapeHtml((string) $submitJob['last_error']) ?>
+                        </td>
+                    </tr>
+                <?php elseif ($submitJob && str_starts_with((string) $submitJob['last_error'], 'Skipped')): ?>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Auto-submit')) ?></th>
+                        <td><?= $escaper->escapeHtml((string) $submitJob['last_error']) ?></td>
+                    </tr>
+                <?php endif; ?>
+            </table>
+        </div>
+
+        <?php if ($creditMemos): ?>
+            <div class="admin__page-section-item">
+                <div class="admin__page-section-item-title">
+                    <span class="title"><?= $escaper->escapeHtml(__('Credit notes')) ?></span>
+                </div>
+                <table class="admin__table-secondary">
+                    <?php foreach ($creditMemos as $memo): ?>
+                        <tr>
+                            <th>
+                                #<?= $escaper->escapeHtml($memo['number']) ?>
+                                (<?= $escaper->escapeHtml($memo['amount']) ?>)
+                            </th>
+                            <td>
+                                <?= $escaper->escapeHtml($memo['status'] !== '' ? $memo['status'] : __('Not filed')) ?>
+                                <?php if ($memo['status'] === '' && (string) ($memo['job']['last_error'] ?? '') !== ''): ?>
+                                    : <?= $escaper->escapeHtml((string) $memo['job']['last_error']) ?>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($memo['status'] === '' && $block->isFiled()): ?>
+                                    <form method="post" action="<?= $escaper->escapeUrl($block->getActionUrl('run')) ?>">
+                                        <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>">
+                                        <input type="hidden" name="kind" value="creditnote">
+                                        <input type="hidden" name="creditmemo_id" value="<?= (int) $memo['id'] ?>">
+                                        <button type="submit" class="action-secondary">
+                                            <span>
+                                                <?= $escaper->escapeHtml(
+                                                    $memo['job'] ? __('Retry credit note') : __('File credit note')
+                                                ) ?>
+                                            </span>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!$block->isFiled()): ?>
+            <form id="envoice-submit-form" method="post" action="<?= $escaper->escapeUrl($block->getActionUrl('run')) ?>">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>">
+                <input type="hidden" name="kind" value="submit">
+                <input type="hidden" name="mode" value="individual">
+            </form>
+            <form id="envoice-consolidate-form" method="post"
+                  action="<?= $escaper->escapeUrl($block->getActionUrl('run')) ?>">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>">
+                <input type="hidden" name="kind" value="submit">
+                <input type="hidden" name="mode" value="consolidated">
+            </form>
+        <?php else: ?>
+            <form id="envoice-refresh-form" method="post"
+                  action="<?= $escaper->escapeUrl($block->getActionUrl('refresh')) ?>">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>">
+            </form>
+        <?php endif; ?>
+        <div class="admin__page-section-item envoice-actions">
+            <?php if (!$block->isFiled()): ?>
+                <button type="submit" form="envoice-submit-form" class="action-primary">
+                    <span><?= $escaper->escapeHtml($submitJob ? __('Retry e-invoice') : __('Submit e-invoice')) ?></span>
+                </button>
+                <button type="submit" form="envoice-consolidate-form" class="action-secondary">
+                    <span><?= $escaper->escapeHtml(__('Add to consolidated')) ?></span>
+                </button>
+                <button type="button" id="envoice-buyer-toggle" class="action-default"
+                        aria-controls="envoice-buyer-fieldset"
+                        aria-expanded="<?= $buyerOpen ? 'true' : 'false' ?>">
+                    <span><?= $escaper->escapeHtml(__('Edit buyer details')) ?></span>
+                </button>
+            <?php else: ?>
+                <button type="submit" form="envoice-refresh-form" class="action-secondary">
+                    <span><?= $escaper->escapeHtml(__('Refresh status')) ?></span>
+                </button>
+                <?php if (($document['sale_id'] ?? '') !== ''): ?>
+                    <a class="action-secondary" href="<?= $escaper->escapeUrl($block->getActionUrl('receipt')) ?>">
+                        <span><?= $escaper->escapeHtml(__('Download receipt')) ?></span>
+                    </a>
+                <?php endif; ?>
+                <?php if ($cancelState === 'open'): ?>
+                    <button type="submit" form="envoice-cancel-form" class="action-secondary">
+                        <span><?= $escaper->escapeHtml(__('Cancel e-invoice')) ?></span>
+                    </button>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+
+        <?php if ($cancelState === 'open'): ?>
+            <form id="envoice-cancel-form" class="admin__page-section-item" method="post"
+                  action="<?= $escaper->escapeUrl($block->getActionUrl('cancel')) ?>">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>">
+                <fieldset class="admin__fieldset">
+                    <div class="admin__field">
+                        <label class="admin__field-label" for="envoice-cancel-reason">
+                            <span><?= $escaper->escapeHtml(__('Cancellation reason')) ?></span>
+                        </label>
+                        <div class="admin__field-control">
+                            <input id="envoice-cancel-reason" class="admin__control-text" name="reason" required
+                                   minlength="5" maxlength="300"
+                                   value="<?= $escaper->escapeHtmlAttr(__('Cancelled by merchant')) ?>">
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <?= /* @noEscape */ $secureRenderer->renderEventListenerAsTag(
+                'onsubmit',
+                'return confirm(' . json_encode((string) __('Cancel this e-invoice on MyInvois?')) . ');',
+                '#envoice-cancel-form'
+            ) ?>
+        <?php elseif ($cancelState === 'credit_note'): ?>
+            <p class="admin__page-section-item"><?= $escaper->escapeHtml(__('Cancel the credit note first.')) ?></p>
+        <?php elseif ($cancelState === 'expired'): ?>
+            <p class="admin__page-section-item">
+                <?= $escaper->escapeHtml(
+                    __('The 72-hour window to cancel on MyInvois has passed. Refund with a credit memo instead.')
+                ) ?>
+            </p>
+        <?php endif; ?>
+
+        <?php if (!$block->isFiled()): ?>
+            <form class="admin__page-section-item" method="post"
+                  action="<?= $escaper->escapeUrl($block->getActionUrl('saveBuyer')) ?>">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>">
+                <fieldset id="envoice-buyer-fieldset" class="admin__fieldset" <?= $buyerOpen ? '' : 'hidden' ?>>
+                    <legend class="admin__legend">
+                        <span><?= $escaper->escapeHtml(__('Buyer details for the e-invoice')) ?></span>
+                    </legend>
+                    <div class="admin__field">
+                        <label class="admin__field-label" for="envoice-tin">
+                            <span><?= $escaper->escapeHtml(__('TIN')) ?></span>
+                        </label>
+                        <div class="admin__field-control">
+                            <input id="envoice-tin" class="admin__control-text" name="tin" maxlength="30"
+                                   value="<?= $escaper->escapeHtmlAttr((string) ($buyer['tin'] ?? '')) ?>">
+                        </div>
+                    </div>
+                    <div class="admin__field">
+                        <label class="admin__field-label" for="envoice-id-type">
+                            <span><?= $escaper->escapeHtml(__('ID type')) ?></span>
+                        </label>
+                        <div class="admin__field-control">
+                            <select id="envoice-id-type" class="admin__control-select" name="id_type">
+                                <?php foreach ($block->getIdTypes() as $value => $label): ?>
+                                    <option value="<?= $escaper->escapeHtmlAttr($value) ?>"
+                                        <?= ($buyer['idType'] ?? 'BRN') === $value ? 'selected' : '' ?>>
+                                        <?= $escaper->escapeHtml($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="admin__field">
+                        <label class="admin__field-label" for="envoice-id-value">
+                            <span><?= $escaper->escapeHtml(__('ID number')) ?></span>
+                        </label>
+                        <div class="admin__field-control">
+                            <input id="envoice-id-value" class="admin__control-text" name="id_value" maxlength="50"
+                                   value="<?= $escaper->escapeHtmlAttr((string) ($buyer['idValue'] ?? '')) ?>">
+                        </div>
+                    </div>
+                    <div class="admin__field">
+                        <label class="admin__field-label" for="envoice-buyer-name">
+                            <span><?= $escaper->escapeHtml(__('Registered name')) ?></span>
+                        </label>
+                        <div class="admin__field-control">
+                            <input id="envoice-buyer-name" class="admin__control-text" name="name" maxlength="255"
+                                   value="<?= $escaper->escapeHtmlAttr((string) ($buyer['name'] ?? '')) ?>">
+                        </div>
+                    </div>
+                    <div class="admin__field">
+                        <div class="admin__field-control envoice-actions">
+                            <button type="submit" class="action-secondary">
+                                <span><?= $escaper->escapeHtml(__('Save buyer')) ?></span>
+                            </button>
+                            <button type="submit" class="action-secondary"
+                                    formaction="<?= $escaper->escapeUrl($block->getActionUrl('lookupTin')) ?>">
+                                <span><?= $escaper->escapeHtml(__('Look up TIN')) ?></span>
+                            </button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <?= /* @noEscape */ $secureRenderer->renderTag('script', [], <<<'JS'
+(function () {
+    var button = document.getElementById('envoice-buyer-toggle'),
+        fieldset = document.getElementById('envoice-buyer-fieldset');
+
+    button.addEventListener('click', function () {
+        fieldset.hidden = !fieldset.hidden;
+        button.setAttribute('aria-expanded', String(!fieldset.hidden));
+        if (!fieldset.hidden) {
+            document.getElementById('envoice-tin').focus();
+        }
+    });
+}());
+JS, false) ?>
+        <?php endif; ?>
+    <?php endif; ?>
+    </div>
+</section>
