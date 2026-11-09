@@ -6,7 +6,7 @@ monthly consolidated e-invoice, and credit memos become credit notes.
 
 Free module, MIT licence. You need an envoice account; the Free plan is enough to start.
 
-Supports Magento 2.4.7 to 2.4.9 on PHP 8.2 to 8.4.
+Supports Magento 2.4.7 to 2.4.9 on PHP 8.2 to 8.5.
 
 ## Install with Composer
 
