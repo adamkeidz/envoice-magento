@@ -20,7 +20,7 @@ $version = $Matches[1]
 $out = Join-Path $root "envoice-magento-$version.zip"
 if (Test-Path $out) { Remove-Item $out -Force }
 
-$skip = @('pack.ps1', '.gitignore', 'CLAUDE.md')
+$skip = @('pack.ps1', '.gitignore', '.gitattributes', 'CLAUDE.md')
 $files = Get-ChildItem -Recurse -File $root | Where-Object {
   $_.Extension -ne '.zip' -and $skip -notcontains $_.Name
 }
