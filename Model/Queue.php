@@ -134,14 +134,15 @@ class Queue
      */
     public function retryLater(array $job, string $error): void
     {
-        $attempts = (int) $job['attempts'];
-        if ($attempts >= count(self::BACKOFF_MINUTES)) {
+        // attempts is at least 1 here, so the first failure takes the first rung (1 minute).
+        $rung = (int) $job['attempts'] - 1;
+        if ($rung >= count(self::BACKOFF_MINUTES)) {
             $this->fail((int) $job['job_id'], $error);
             return;
         }
         $this->db()->update(
             $this->table(),
-            ['next_run_at' => $this->now(self::BACKOFF_MINUTES[$attempts] * 60), 'last_error' => $error],
+            ['next_run_at' => $this->now(self::BACKOFF_MINUTES[$rung] * 60), 'last_error' => $error],
             ['job_id = ?' => (int) $job['job_id']]
         );
     }

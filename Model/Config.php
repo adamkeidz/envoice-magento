@@ -8,7 +8,7 @@ use Magento\Store\Model\ScopeInterface;
 
 class Config
 {
-    public const MODULE_VERSION = '1.1.2';
+    public const MODULE_VERSION = '1.1.3';
 
     /**
      * @param ScopeConfigInterface $scopeConfig
