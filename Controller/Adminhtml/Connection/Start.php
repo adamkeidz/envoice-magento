@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Envoice\Einvoice\Controller\Adminhtml\Connection;
 
+use Envoice\Einvoice\Model\AdminScope;
 use Envoice\Einvoice\Model\ApiClient;
 use Envoice\Einvoice\Model\Config;
 use Envoice\Einvoice\Model\Connections;
@@ -20,6 +21,7 @@ class Start extends AbstractConnection
     /**
      * @param Context $context
      * @param StoreSites $sites
+     * @param AdminScope $scope
      * @param Connections $connections
      * @param ApiClient $api
      * @param Config $config
@@ -28,12 +30,13 @@ class Start extends AbstractConnection
     public function __construct(
         Context $context,
         StoreSites $sites,
+        AdminScope $scope,
         private readonly Connections $connections,
         private readonly ApiClient $api,
         private readonly Config $config,
         private readonly ProductMetadataInterface $productMetadata
     ) {
-        parent::__construct($context, $sites);
+        parent::__construct($context, $sites, $scope);
     }
 
     /**

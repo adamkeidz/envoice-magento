@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Envoice\Einvoice\Controller\Adminhtml\Order;
 
+use Envoice\Einvoice\Model\AdminScope;
 use Envoice\Einvoice\Model\DocumentService;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
@@ -15,17 +16,19 @@ class Receipt extends AbstractOrder implements HttpGetActionInterface
 {
     /**
      * @param Context $context
+     * @param AdminScope $scope
      * @param DocumentService $service
      * @param OrderRepositoryInterface $orders
      * @param FileFactory $fileFactory
      */
     public function __construct(
         Context $context,
+        AdminScope $scope,
         private readonly DocumentService $service,
         private readonly OrderRepositoryInterface $orders,
         private readonly FileFactory $fileFactory
     ) {
-        parent::__construct($context);
+        parent::__construct($context, $scope);
     }
 
     /**

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Envoice\Einvoice\Controller\Adminhtml\Order;
 
+use Envoice\Einvoice\Model\AdminScope;
 use Envoice\Einvoice\Model\DocumentService;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\View\Result\Redirect;
@@ -12,11 +13,15 @@ class SaveBuyer extends AbstractOrder implements HttpPostActionInterface
 {
     /**
      * @param Context $context
+     * @param AdminScope $scope
      * @param DocumentService $service
      */
-    public function __construct(Context $context, private readonly DocumentService $service)
-    {
-        parent::__construct($context);
+    public function __construct(
+        Context $context,
+        AdminScope $scope,
+        private readonly DocumentService $service
+    ) {
+        parent::__construct($context, $scope);
     }
 
     /**

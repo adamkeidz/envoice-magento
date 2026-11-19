@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Envoice\Einvoice\Controller\Adminhtml\Order;
 
+use Envoice\Einvoice\Model\AdminScope;
 use Envoice\Einvoice\Model\Queue;
 use Envoice\Einvoice\Model\QueueProcessor;
 use Magento\Backend\App\Action\Context;
@@ -17,15 +18,17 @@ class Run extends AbstractOrder implements HttpPostActionInterface
 {
     /**
      * @param Context $context
+     * @param AdminScope $scope
      * @param Queue $queue
      * @param QueueProcessor $processor
      */
     public function __construct(
         Context $context,
+        AdminScope $scope,
         private readonly Queue $queue,
         private readonly QueueProcessor $processor
     ) {
-        parent::__construct($context);
+        parent::__construct($context, $scope);
     }
 
     /**

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Envoice\Einvoice\Controller\Adminhtml\Connection;
 
+use Envoice\Einvoice\Model\AdminScope;
 use Envoice\Einvoice\Model\ApiClient;
 use Envoice\Einvoice\Model\Connections;
 use Envoice\Einvoice\Model\StoreSites;
@@ -18,16 +19,18 @@ class Poll extends AbstractConnection
     /**
      * @param Context $context
      * @param StoreSites $sites
+     * @param AdminScope $scope
      * @param Connections $connections
      * @param ApiClient $api
      */
     public function __construct(
         Context $context,
         StoreSites $sites,
+        AdminScope $scope,
         private readonly Connections $connections,
         private readonly ApiClient $api
     ) {
-        parent::__construct($context, $sites);
+        parent::__construct($context, $sites, $scope);
     }
 
     /**
